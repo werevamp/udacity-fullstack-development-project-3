@@ -11,8 +11,10 @@
 	<body>
 		{% include "header.html" %}
 		<main class="row--main row">
-			{% block content %}
-			{% endblock %}
+			<div class="container">
+				{% block content %}
+				{% endblock %}
+			</div>
 		</main>
 	</body>
 </html>

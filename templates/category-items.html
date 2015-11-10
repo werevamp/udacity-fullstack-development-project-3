@@ -3,7 +3,9 @@
 	{% include "categories.html" %}
 	{% if items %}
 		<div class="two-thirds">
-			<a href="{{url_for('addItem')}}">Add Item</a>
+			{% if logged_in %}
+				<a href="{{url_for('addItem')}}">Add Item</a>
+			{% endif %}
 			{% if items_amount > 1 %}
 				<h2>{{category_name}} Items ({{items_amount}} Items)</h2>
 			{% else %}

@@ -1,6 +1,6 @@
 {% extends "main.html" %}
 {% block content %}
-<h1>Edit item</h1>
+<h2>Edit item</h2>
 <form action="{{url_for('editItem', item_name=item.name)}}" method="post">
 	<div class="form-field-container">
 		<label for="name">Name</label><br>

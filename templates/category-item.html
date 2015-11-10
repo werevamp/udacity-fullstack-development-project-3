@@ -2,7 +2,9 @@
 {% block content %}
 	<h1>{{item.name}}</h1>
 	{{item.description}}
-	<div class="modify-item-container">
-		<a href="{{url_for('editItem', item_name=item.name, item_id=item.id)}}">Edit</a> | <a href="{{url_for('deleteItem', item_name=item.name)}}">Delete</a>
-	</div>
+	{% if logged_in %}
+		<div class="modify-item-container">
+			<a href="{{url_for('editItem', item_name=item.name, item_id=item.id)}}">Edit</a> | <a href="{{url_for('deleteItem', item_name=item.name)}}">Delete</a>
+		</div>
+		{% endif %}
 {% endblock %}

@@ -3,6 +3,7 @@
 {% include "categories.html" %}
 	{% if latest_items %}
 	<div class="two-thirds">
+		<h3>Latest Items</h3>
 		<ul>
 			{% for item in latest_items %}
 			<li><a href="{{url_for('categoryItem', category_name=item.Category.name, item_name=item.Item.name)}}">{{item.Item.name}} <span class="item-category">({{item.Category.name}})</span></a></li>

@@ -1,7 +1,15 @@
 <header class="header">
 	<div class="row">
 		<h1><a href="/">Catalog App</a></h1>
-		<a href="#" class="button button--login">Login</a>
+		{% if logged_in %}
+		{% else %}
+		{% endif %}
+		{% if logged_in %}
+			<a href="{{url_for('gdisconnect')}}" class="button button--login">Logout</a>
+		{% else %}
+			<a href="{{url_for('showLogin')}}" class="button button--login">Login</a>
+		{% endif %}
+
 	</div>
 </header>
 {% with messages = get_flashed_messages() %}

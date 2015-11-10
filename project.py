@@ -33,10 +33,16 @@ session = DBSession()
 
 @app.route('/login')
 def showLogin():
+    if 'username' not in login_session:
+        logged_in = False
+    else:
+        logged_in = True 
+        return redirect(url_for('catalog'))
+
     state = ''.join(random.choice(string.ascii_uppercase + string.digits)
                     for x in xrange(32))
     login_session['state'] = state
-    return render_template('login.html', STATE=state)
+    return render_template('login.html', STATE=state, logged_in=logged_in)
 
 
 @app.route('/gconnect', methods=['POST'])
@@ -110,15 +116,13 @@ def gconnect():
     login_session['picture'] = data['picture']
     login_session['email'] = data['email']
 
-    # See if a user exists, if it doesn't make a new one
-
     output = ''
     output += '<h1>Welcome, '
     output += login_session['username']
     output += '!</h1>'
     output += '<img src="'
     output += login_session['picture']
-    output += ' " style = "width: 300px; height: 300px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
+    output += ' "> '
     flash("you are now logged in as %s" % login_session['username'])
     print "done!"
     return output
@@ -127,13 +131,13 @@ def gconnect():
 @app.route('/gdisconnect')
 def gdisconnect():
         # Only disconnect a connected user.
-    credentials = login_session.get('credentials')
+    credentials = json.loads(login_session.get('credentials'))
     if credentials is None:
         response = make_response(
             json.dumps('Current user not connected.'), 401)
         response.headers['Content-Type'] = 'application/json'
         return response
-    access_token = credentials.access_token
+    access_token = credentials['access_token']
     url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % access_token
     h = httplib2.Http()
     result = h.request(url, 'GET')[0]
@@ -148,7 +152,7 @@ def gdisconnect():
 
         response = make_response(json.dumps('Successfully disconnected.'), 200)
         response.headers['Content-Type'] = 'application/json'
-        return response
+        return redirect(url_for('catalog'))
     else:
         # For whatever reason, the given token was invalid.
         response = make_response(
@@ -164,10 +168,15 @@ def catalog():
     """
     Home page
     """
+    if 'username' not in login_session:
+        logged_in = False
+    else:
+        logged_in = True 
+
     categories = session.query(Category).order_by(asc(Category.name))
     latest_items = session.query(Item, Category).filter(Item.category_id == Category.id).order_by(desc(Item.id)).limit(10).all()
 
-    return render_template('catalog.html', categories=categories, latest_items=latest_items)
+    return render_template('catalog.html', categories=categories, latest_items=latest_items, logged_in=logged_in)
 
 
 @app.route('/catalog/<string:category_name>/items/')
@@ -175,6 +184,11 @@ def categoryItems(category_name):
     """
     Display items by category
     """
+    if 'username' not in login_session:
+        logged_in = False
+    else:
+        logged_in = True 
+
     categories = session.query(Category).order_by(asc(Category.name))
     category = session.query(Category).filter_by(name=category_name).one()
     items = session.query(Item).filter_by(category_id=category.id).all()
@@ -182,16 +196,22 @@ def categoryItems(category_name):
     # return category_id
     return render_template('category-items.html', items=items,
             items_amount=items_amount, category_name=category_name,
-            categories=categories)
+            categories=categories, logged_in=logged_in)
 
 
 @app.route('/catalog/<string:category_name>/<string:item_name>/')
 def categoryItem(category_name, item_name):
     """
+    Displays a single item
     """
+
+    if 'username' not in login_session:
+        logged_in = False
+    else:
+        logged_in = True 
     category = session.query(Category).filter_by(name=category_name).one()
     item = session.query(Item).filter_by(category_id=category.id).filter_by(name=item_name).one()
-    return render_template('category-item.html', item=item)
+    return render_template('category-item.html', item=item, logged_in=logged_in)
 
 
 @app.route('/catalog/item/new/', methods=['GET', 'POST'])
@@ -199,6 +219,13 @@ def addItem():
     """
     Adds a new Catalog item to a specific category
     """
+
+    if 'username' not in login_session:
+        logged_in = False
+        return redirect('/login')
+    else:
+        logged_in = True 
+
     if request.method == 'POST':
         if request.form['name']:
             new_item = Item(name=request.form['name'], description=request.form['description'], category_id=request.form['category'])
@@ -207,10 +234,12 @@ def addItem():
             return redirect(url_for('catalog'))
         else:
             categories = session.query(Category).order_by(asc(Category.name))
-            return render_template('add-item.html', categories=categories)
+            return render_template('add-item.html', categories=categories
+                    , logged_in=logged_in)
     else:
         categories = session.query(Category).order_by(asc(Category.name))
-        return render_template('add-item.html', categories=categories)
+        return render_template('add-item.html', categories=categories
+                , logged_in=logged_in)
 
 
 @app.route('/catalog/<string:item_name>/edit/', methods=['GET', 'POST'])
@@ -218,6 +247,12 @@ def editItem(item_name):
     """
     Edit an existing item
     """
+
+    if 'username' not in login_session:
+        logged_in = False
+        return redirect('/login')
+    else:
+        logged_in = True 
 
     item = session.query(Item).filter_by(name=item_name).one()
     categories = session.query(Category).order_by(asc(Category.name))
@@ -232,14 +267,25 @@ def editItem(item_name):
             return redirect(url_for('catalog'))
 
         else:
-            return render_template('edit-item.html', categories=categories, item=item)
+            return render_template('edit-item.html',
+                    categories=categories, item=item, logged_in=logged_in)
 
     else:
-        return render_template('edit-item.html', categories=categories, item=item)
+        return render_template('edit-item.html',
+                categories=categories, item=item, logged_in=logged_in)
 
 
 @app.route('/catalog/<string:item_name>/delete/', methods=['GET', 'POST'])
 def deleteItem(item_name):
+    """
+    Deletes an Item
+    """
+
+    if 'username' not in login_session:
+        logged_in = False
+        return redirect('/login')
+    else:
+        logged_in = True 
 
     item = session.query(Item).filter_by(name=item_name).one()
     if request.method == 'POST':
@@ -247,7 +293,7 @@ def deleteItem(item_name):
         flash('%s Successfully Deleted' % item.name)
         return redirect(url_for('catalog'))
     else:
-        return render_template('delete-item.html', item=item)
+        return render_template('delete-item.html', item=item, logged_in=logged_in)
 
 
 #JSON

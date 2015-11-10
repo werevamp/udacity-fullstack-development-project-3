@@ -1,8 +1,12 @@
+"""
+Item_catalog is project 3 of the full stack development course
+"""
+
 from flask import Flask, render_template, request, redirect, jsonify, url_for, flash
 
 from sqlalchemy import create_engine, asc, desc
 from sqlalchemy.orm import sessionmaker
-from database_setup import Base, Category, Item, User
+from database_setup import Base, Category, Item
 
 from flask import session as login_session
 import random
@@ -33,10 +37,15 @@ session = DBSession()
 
 @app.route('/login')
 def showLogin():
+    """
+    showLogin takes you to the login page
+    """
+
     if 'username' not in login_session:
         logged_in = False
     else:
-        logged_in = True 
+        logged_in = True
+
         return redirect(url_for('catalog'))
 
     state = ''.join(random.choice(string.ascii_uppercase + string.digits)
@@ -47,6 +56,10 @@ def showLogin():
 
 @app.route('/gconnect', methods=['POST'])
 def gconnect():
+    """
+    This will let you logout of the app
+    """
+
     # Validate state token
     if request.args.get('state') != login_session['state']:
         response = make_response(json.dumps('Invalid state parameter.'), 401)
@@ -96,8 +109,8 @@ def gconnect():
     stored_credentials = login_session.get('credentials')
     stored_gplus_id = login_session.get('gplus_id')
     if stored_credentials is not None and gplus_id == stored_gplus_id:
-        response = make_response(json.dumps('Current user is already connected.'),
-                                 200)
+        response = make_response(
+                json.dumps('Current user is already connected.'), 200)
         response.headers['Content-Type'] = 'application/json'
         return response
 
@@ -166,12 +179,13 @@ def gdisconnect():
 @app.route('/catalog/')
 def catalog():
     """
-    Home page
+    Main page
     """
+
     if 'username' not in login_session:
         logged_in = False
     else:
-        logged_in = True 
+        logged_in = True
 
     categories = session.query(Category).order_by(asc(Category.name))
     latest_items = session.query(Item, Category).filter(Item.category_id == Category.id).order_by(desc(Item.id)).limit(10).all()
@@ -184,10 +198,11 @@ def categoryItems(category_name):
     """
     Display items by category
     """
+
     if 'username' not in login_session:
         logged_in = False
     else:
-        logged_in = True 
+        logged_in = True
 
     categories = session.query(Category).order_by(asc(Category.name))
     category = session.query(Category).filter_by(name=category_name).one()
@@ -208,7 +223,8 @@ def categoryItem(category_name, item_name):
     if 'username' not in login_session:
         logged_in = False
     else:
-        logged_in = True 
+        logged_in = True
+
     category = session.query(Category).filter_by(name=category_name).one()
     item = session.query(Item).filter_by(category_id=category.id).filter_by(name=item_name).one()
     return render_template('category-item.html', item=item, logged_in=logged_in)
@@ -224,7 +240,7 @@ def addItem():
         logged_in = False
         return redirect('/login')
     else:
-        logged_in = True 
+        logged_in = True
 
     if request.method == 'POST':
         if request.form['name']:
@@ -252,7 +268,7 @@ def editItem(item_name):
         logged_in = False
         return redirect('/login')
     else:
-        logged_in = True 
+        logged_in = True
 
     item = session.query(Item).filter_by(name=item_name).one()
     categories = session.query(Category).order_by(asc(Category.name))
@@ -285,7 +301,7 @@ def deleteItem(item_name):
         logged_in = False
         return redirect('/login')
     else:
-        logged_in = True 
+        logged_in = True
 
     item = session.query(Item).filter_by(name=item_name).one()
     if request.method == 'POST':
@@ -293,24 +309,37 @@ def deleteItem(item_name):
         flash('%s Successfully Deleted' % item.name)
         return redirect(url_for('catalog'))
     else:
-        return render_template('delete-item.html', item=item, logged_in=logged_in)
+        return render_template('delete-item.html',
+                item=item, logged_in=logged_in)
 
 
-#JSON
+#API endpoints
 @app.route('/catalog/categories/JSON/')
 def categoriesJSON():
+    """
+    API endpoint that retrieves all categories
+    """
+
     categories = session.query(Category).all()
     return jsonify(categories=[category.serialize for category in categories])
 
 
 @app.route('/catalog/category/<int:category_id>/JSON/')
 def categoryJSON(category_id):
+    """
+    API endpoint that retrieves a single category
+    """
+
     category = session.query(Category).filter_by(id=category_id).one()
     return jsonify(category=category.serialize)
 
 
 @app.route('/catalog/category/<int:category_id>/items/JSON/')
 def categoryItemsJSON(category_id):
+    """
+    API endpoint that retrieves items specific to a category
+    """
+
     items = session.query(Item).filter_by(category_id=category_id).all()
     return jsonify(items=[item.serialize for item in items])
 

@@ -1,0 +1,10 @@
+{% if categories %}
+<aside class="one-third">
+	<h3>Categories</h3>
+	<ul>
+		{% for category in categories %}
+		<li><a href="{{url_for('categoryItems', category_name=category.name)}}">{{ category.name }}</a></li>
+		{% endfor %}
+	</ul>
+</aside>
+{% endif %}

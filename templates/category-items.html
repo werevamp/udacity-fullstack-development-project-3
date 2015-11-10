@@ -1,0 +1,19 @@
+{% extends "main.html" %}
+{% block content %}
+	{% include "categories.html" %}
+	{% if items %}
+		<div class="two-thirds">
+			<a href="{{url_for('addItem')}}">Add Item</a>
+			{% if items_amount > 1 %}
+				<h2>{{category_name}} Items ({{items_amount}} Items)</h2>
+			{% else %}
+				<h2>{{category_name}} Item ({{items_amount}} Item)</h2>
+			{% endif %}
+			<ul>
+				{% for item in items %}
+				<li><a href="{{url_for('categoryItem', category_name=category_name, item_name=item.name)}}">{{item.name}}</a> {{item.id}}</li>
+				{% endfor %}
+			</ul>
+		</div>
+	{% endif %}
+{% endblock %}

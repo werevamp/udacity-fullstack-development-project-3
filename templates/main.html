@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<title>Catalog Items App</title>
+		<link rel=stylesheet type=text/css href="{{ url_for('static', filename='normalize.css') }}">
+		<link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
+	</head>
+	<body>
+		{% include "header.html" %}
+		<main class="row--main row">
+			{% block content %}
+			{% endblock %}
+		</main>
+	</body>
+</html>

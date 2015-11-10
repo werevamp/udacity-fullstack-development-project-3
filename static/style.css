@@ -1,0 +1,36 @@
+.row {
+	max-width: 1000px;
+	width: 100%;
+	padding: 0 15px;
+	margin: 0 auto;
+	*zoom: 1;
+}
+
+.row:before,
+.row:after {
+	content: " ";
+	display: table;
+}
+
+.row:after {
+	clear: both;
+}
+
+.row--main {
+	padding-top: 20px;
+}
+
+.one-third {
+	float: left;
+	width: 33.3333%;
+}
+
+.two-thirds {
+	float: left;
+	width: 66.6667%;
+}
+
+.form-field-container {
+	padding-bottom: 10px;
+}
+

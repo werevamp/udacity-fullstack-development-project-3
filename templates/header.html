@@ -4,3 +4,16 @@
 		<a href="#" class="button button--login">Login</a>
 	</div>
 </header>
+{% with messages = get_flashed_messages() %}
+	{% if messages %}
+	<div class="row">
+		<div class="flash">
+			<ul>
+				{% for message in messages %}
+				<li><strong>{{message}}</strong></li>
+				{% endfor %}
+			</ul>
+		</div>
+	</div>
+	{% endif %}
+{% endwith %}

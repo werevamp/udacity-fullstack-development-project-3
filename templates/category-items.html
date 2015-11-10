@@ -11,7 +11,7 @@
 			{% endif %}
 			<ul>
 				{% for item in items %}
-				<li><a href="{{url_for('categoryItem', category_name=category_name, item_name=item.name)}}">{{item.name}}</a> {{item.id}}</li>
+				<li><a href="{{url_for('categoryItem', category_name=category_name, item_name=item.name)}}">{{item.name}}</a></li>
 				{% endfor %}
 			</ul>
 		</div>
